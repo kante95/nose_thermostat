@@ -7,11 +7,15 @@
 #define N 125
 
 double myrandom(){
-	return ((double)rand()/(double)(RAND_MAX));
+	double x = ((double)rand()/(double)(RAND_MAX));
+	printf("nomrmalize rand %lf\n",x);
+	return x;
 }
 
-double normrand(double std){
-	return sqrt((-2*(std*std)*log(1-myrandom()))*cos(3.1415*2*myrandom()));
+double normrand(){
+	double x = sqrt( ( -2*log(1-myrandom())))*cos(3.1415*2*myrandom());
+	printf("box muller %lf\n",x);
+	return x;
 } 
 
 void printmatrix(double matrix[N][3]){
@@ -43,9 +47,9 @@ void initialize(double L,double positions[N][3],double velocities[N][3]){
     			positions[index][0]= j*(L/i) - L/2.0;
                 positions[index][1] = k*(L/i) - L/2.0;
                 positions[index][2] = m*(L/i) - L/2.0;
-                velocities[index][0]= normrand(1);
-                velocities[index][1] = normrand(1);
-                velocities[index][2] = normrand(1);
+                velocities[index][0]= normrand();
+                velocities[index][1] = normrand();
+                velocities[index][2] = normrand();
                 //printf("x: %lf y: %lf z: %lf",positions[index][0],positions[index][1],positions[index][2]);
                 index++;
 			}
@@ -92,8 +96,8 @@ double calculate_potential(double positions[N][3],double L,double acceleration[N
     			c = positions[i][2] - positions[j][2]-L*rint((positions[i][2] - positions[j][2])/L);
     			force =  lennard_jones_derivative(a,b,c);
     			for(x = 0; x<3;x++){
-    				acceleration[i][x] = force[x];
-    				acceleration[j][x] = -force[x];
+    				acceleration[i][x] = *(force + x);
+    				acceleration[j][x] = -*(force +x);
     			}
     		}
     	}
@@ -114,20 +118,23 @@ int simulation(double density,double temperature,double time, double step){
 
     double potential,energy;
 
-    int t,i,j;
+    double t;
+    int i,j;
    
     printf("Inizializzo lo stato iniziale....\n");
     initialize(L,positions,velocities);
+    printmatrix(velocities);
     potential = calculate_potential(positions,L,current_accelerations);
 	energy = potential;
 	for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
-				energy += 0.5* pow(velocities[i][j],2);
+				energy += 0.5*pow(velocities[i][j],2);
 		}
 	}
-
+	printf("%lf\n",energy);
     
-    for(t = 0; t<time;time+=step){
+    for(t = 0; t<time;t+=step){
+    	energy = 0;
         //print("$positions\n")
         //print("Simulando secondo "+str(t)+" s")
         //calcolo le nuove posizioni
@@ -156,13 +163,13 @@ int simulation(double density,double temperature,double time, double step){
 				energy += 0.5* pow(velocities[i][j],2);
 			}
 		}
-        printf("Energy at second %f: %f\n",t,energy);
+        printf("Energy at second %lf: %lf\n",t,energy);
     }
     return 0;
 }
 
 int main(){
-	simulation(0.01,1,0.1,0.00001);
-    
+	srand(2);
+	simulation(0.01,1,0.1,0.000001);
     return 0;
 }
