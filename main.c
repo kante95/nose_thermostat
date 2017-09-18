@@ -6,6 +6,14 @@
 
 #define N 125
 
+double myrandom(){
+	return ((double)rand()/(double)(RAND_MAX));
+}
+
+double normrand(double std){
+	return sqrt((-2*(std*std)*log(1-myrandom()))*cos(3.1415*2*myrandom()));
+} 
+
 void printmatrix(double matrix[N][3]){
 	int i;
 	for(i=0;i<N;i++){
@@ -35,6 +43,9 @@ void initialize(double L,double positions[N][3],double velocities[N][3]){
     			positions[index][0]= j*(L/i) - L/2.0;
                 positions[index][1] = k*(L/i) - L/2.0;
                 positions[index][2] = m*(L/i) - L/2.0;
+                velocities[index][0]= normrand(1);
+                velocities[index][1] = normrand(1);
+                velocities[index][2] = normrand(1);
                 //printf("x: %lf y: %lf z: %lf",positions[index][0],positions[index][1],positions[index][2]);
                 index++;
 			}
@@ -42,12 +53,12 @@ void initialize(double L,double positions[N][3],double velocities[N][3]){
     }
 }
 
-double *lennard_jones_derivative(double x,double y,double z){
+double * lennard_jones_derivative(double x,double y,double z){
     double den =pow(x,2)+pow(y,2) +pow(z,2);
-    double results[3];
-    results[0] = -4(-12*x*den^-7 + 6*x*den^-4);
-    results[1] = -4(-12*y*den^-7 + 6*y*den^-4);
-    results[2] = -4(-12*z*den^-7 + 6*z*den^-4);
+    double static results[3];
+    results[0] = -4*(-12*x*pow(den,-7) + 6*x*pow(den,-4));
+    results[1] = -4*(-12*y*pow(den,-7) + 6*y*pow(den,-4));
+    results[2] = -4*(-12*z*pow(den,-7) + 6*z*pow(den,-4));
     return results;
 }
 
@@ -65,7 +76,7 @@ double calculate_potential(double positions[N][3],double L,double acceleration[N
     double r;
     int i,j,x;
     double d,a,b,c;
-    double force[3];
+    double *force;
     for(i=0;i<N;i++){
     	for(j=i+1;j<N;j++){
     		r=0;
@@ -102,10 +113,12 @@ int simulation(double density,double temperature,double time, double step){
     double new_accelerations[N][3];
 
     double potential,energy;
+
+    int t,i,j;
    
-    printf("Inizializzo lo stato iniziale....\n")
-    initialize(L,positions,velocities)
-    potential = calculate_potential(positions,L,current_accelerations)
+    printf("Inizializzo lo stato iniziale....\n");
+    initialize(L,positions,velocities);
+    potential = calculate_potential(positions,L,current_accelerations);
 	energy = potential;
 	for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
@@ -113,7 +126,7 @@ int simulation(double density,double temperature,double time, double step){
 		}
 	}
 
-    int t,i,j;
+    
     for(t = 0; t<time;time+=step){
         //print("$positions\n")
         //print("Simulando secondo "+str(t)+" s")
@@ -121,13 +134,13 @@ int simulation(double density,double temperature,double time, double step){
         //print("$shape(positions) $shape(velocities)")
         for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
-				positions[i][j] = positions[i][j] + velocities[i][j]*step + 0.5*current_accelerations[i][j]*pow(step,2)
-        		positions[i][j] = positions[i][j] - L*rint(positions[i][j]/L)
+				positions[i][j] = positions[i][j] + velocities[i][j]*step + 0.5*current_accelerations[i][j]*pow(step,2);
+        		positions[i][j] = positions[i][j] - L*rint(positions[i][j]/L);
 			}
 		}
         
         //accelerazioni dovute alle nuove posizioni
-        potential = calculate_potential(positions,L,new_accelerations)
+        potential = calculate_potential(positions,L,new_accelerations);
         
         for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
@@ -143,12 +156,13 @@ int simulation(double density,double temperature,double time, double step){
 				energy += 0.5* pow(velocities[i][j],2);
 			}
 		}
-        //print("Energy at second $t: $energy, Partial pressure: $pressure\n")
+        printf("Energy at second %f: %f\n",t,energy);
     }
-    return 0   
+    return 0;
 }
 
 int main(){
+	simulation(0.01,1,0.1,0.00001);
     
     return 0;
 }
