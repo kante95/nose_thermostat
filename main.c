@@ -7,8 +7,10 @@
 #define N 125
 
 double myrandom(){
-	double x = ((double)rand()/(double)(RAND_MAX));
-	printf("nomrmalize rand %lf\n",x);
+	double x = 1
+	for (i=0;x==1;i++)
+		x = ((double)rand()/(double)(RAND_MAX));
+	printf("normalize rand %lf\n",x);
 	return x;
 }
 
