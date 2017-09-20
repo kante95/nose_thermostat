@@ -109,7 +109,7 @@ int simulation(double density,double temperature,double time, double step){
     double positions[N][3];
     double velocities[N][3];
     double half_velocities[N][3];
-    double s=1,Q=2;
+    double s=2,Q=100;
 
     double current_accelerations[N][3];
     double new_accelerations[N][3];
@@ -154,13 +154,11 @@ int simulation(double density,double temperature,double time, double step){
         potential = calculate_potential(positions,L,new_accelerations);
         
         //s
-        s+=s;
         for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
-        		s += (step/(2*Q))*(0.5*pow(velocities[i][j],2)+0.5*pow(half_velocities[i][j],2)-(3*N+1)*temperature/3);
+       		s += (step/(2*Q))*(0.5*pow(velocities[i][j],2)+0.5*pow(half_velocities[i][j],2)-(3*N+1)*temperature/3);
     		}
     	}
-
     	//velocities
         for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
@@ -168,14 +166,14 @@ int simulation(double density,double temperature,double time, double step){
     		}
     	}
 
-    	//printmatrix(velocities);
+    	//printmatrix(positions);
 
 
 
         //aggiorno le accelerazioni per il prossimo ciclo
         copy_matrix(new_accelerations,current_accelerations);
  
-        energy+= potential+3*N*log(s);
+        energy+= potential;//+3*N*log(s);
         for(i=0;i<N;i++){
 			for(j=0;j<3;j++){
 				energy += 0.5* pow(velocities[i][j]/s,2);
@@ -188,6 +186,6 @@ int simulation(double density,double temperature,double time, double step){
 
 int main(){
 	srand(2);
-	simulation(0.01,1,0.1,0.0000001);
+	simulation(0.01,1,10.0,0.000001);
     return 0;
 }
